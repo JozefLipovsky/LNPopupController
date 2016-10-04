@@ -14,6 +14,7 @@
 static const void* _LNPopupItemKey = &_LNPopupItemKey;
 static const void* _LNPopupControllerKey = &_LNPopupControllerKey;
 const void* _LNPopupPresentationContainerViewControllerKey = &_LNPopupPresentationContainerViewControllerKey;
+const void* _LNPopupBarPreviewingDelegateKey = &_LNPopupBarPreviewingDelegateKey;
 const void* _LNPopupContentViewControllerKey = &_LNPopupContentViewControllerKey;
 static const void* _LNPopupBottomBarSupportKey = &_LNPopupBottomBarSupportKey;
 
@@ -142,6 +143,19 @@ static const void* _LNPopupBottomBarSupportKey = &_LNPopupBottomBarSupportKey;
 	return self.view;
 }
 
+- (id<LNPopupBarPreviewingDelegate>)popupBarPreviewingDelegate
+{
+	return [(_LNWeakRef*)objc_getAssociatedObject(self, _LNPopupBarPreviewingDelegateKey) object];
+}
+
+- (void)setPopupBarPreviewingDelegate:(id<LNPopupBarPreviewingDelegate>)popupBarPreviewingDelegate
+{
+	[self willChangeValueForKey:@"popupBarPreviewingDelegate"];
+	_LNWeakRef* weakRef = [_LNWeakRef refWithObject:popupBarPreviewingDelegate];
+	objc_setAssociatedObject(self, _LNPopupBarPreviewingDelegateKey, weakRef, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+	[self didChangeValueForKey:@"popupBarPreviewingDelegate"];
+}
+
 @end
 
 @implementation UIViewController (LNCustomContainerPopupSupport)
@@ -181,19 +195,34 @@ static const void* _LNPopupBottomBarSupportKey = &_LNPopupBottomBarSupportKey;
 }
 
 
-- (nullable UIView *)bottomDockingViewForPopup_nocreate
+- (nullable UIView *)bottomDockingViewForPopup_nocreateOrDeveloper
 {
-	return self._ln_bottomBarSupport_nocreate;
+	return self.bottomDockingViewForPopup ?: self._ln_bottomBarSupport_nocreate;
 }
 
-- (nonnull UIView *)bottomDockingViewForPopup
+- (nonnull UIView *)bottomDockingViewForPopup_internalOrDeveloper
 {
-	return self._ln_bottomBarSupport;
+	return self.bottomDockingViewForPopup ?: self._ln_bottomBarSupport;
+}
+
+- (nullable UIView *)bottomDockingViewForPopup
+{
+	return nil;
 }
 
 - (CGRect)defaultFrameForBottomDockingView
 {
+	return CGRectZero;
+}
+
+- (CGRect)defaultFrameForBottomDockingView_internal
+{
 	return CGRectMake(0, self.view.bounds.size.height, self.view.bounds.size.width, 0);
+}
+
+- (CGRect)defaultFrameForBottomDockingView_internalOrDeveloper
+{
+	return [self bottomDockingViewForPopup] != nil ? [self defaultFrameForBottomDockingView] : [self defaultFrameForBottomDockingView_internal];
 }
 
 @end

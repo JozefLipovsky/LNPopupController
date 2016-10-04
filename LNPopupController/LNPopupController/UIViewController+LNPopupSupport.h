@@ -35,10 +35,34 @@ typedef NS_ENUM(NSUInteger, LNPopupPresentationState){
 	LNPopupPresentationStateOpen,
 };
 
+@protocol LNPopupBarPreviewingDelegate <NSObject>
+
+@required
+/**
+ *  Called when the user performs a peek action on the popup bar.
+ *
+ *  The default implementation returns nil, thus no preview is displayed.
+ *
+ *  @return The view controller whose view you want to provide as the preview (peek), or nil to disable preview..
+ */
+
+- (UIViewController*)previewingViewControllerForPopupBar:(LNPopupBar*)popupBar;
+
+@optional
+/**
+ *  Called when the user performs a pop action on the popup bar.
+ *
+ *  The default implementation does not commit the view controller.
+ */
+
+- (void)popupBar:(LNPopupBar*)popupBar commitPreviewingViewController:(UIViewController*)viewController;
+
+@end
+
 /**
  *  Popup presentation support for UIViewController subclasses.
  */
-@interface UIViewController (LNPopupSupport)
+@interface UIViewController (LNPopupContent)
 
 /**
  *  The popup item used to represent the view controller in a popup presentation. (read-only)
@@ -47,6 +71,19 @@ typedef NS_ENUM(NSUInteger, LNPopupPresentationState){
  *  The default behavior is to create a popup item that displays the view controller's title.
  */
 @property (nonatomic, retain, readonly) LNPopupItem* popupItem;
+
+/**
+ *  Return the view to which the popup interaction gesture recognizer will be added to.
+ *
+ *  The default implementation returns the controller's view. @see UIViewController.popupContentView
+ *
+ *  @return The view to which the popup interaction gesture recognizer will be added to.
+ */
+- (__kindof UIView*)viewForPopupInteractionGestureRecognizer;
+
+@end
+
+@interface UIViewController (LNPopupPresentation)
 
 /**
  *  Presents an interactive popup bar in the receiver's view hierarchy. The popup bar is attached to the receiver's docking view. @see -[UIViewController bottomDockingViewForPopup]
@@ -111,7 +148,7 @@ typedef NS_ENUM(NSUInteger, LNPopupPresentationState){
 - (void)updatePopupBarAppearance;
 
 /**
- *  The popup content container view.
+ *  The popup content container view. (read-only)
  */
 @property (nonatomic, strong, readonly) LNPopupContentView* popupContentView;
 
@@ -130,33 +167,26 @@ typedef NS_ENUM(NSUInteger, LNPopupPresentationState){
  */
 @property (nullable, nonatomic, weak, readonly) __kindof UIViewController* popupPresentationContainerViewController;
 
-/**
- *  Return the view to which the popup interaction gesture recognizer will be added to.
- *
- *  A default implementation is provided, where the popupContentView is returned. @see UIViewController.popupContentView
- *
- *  @return The view to which the popup interaction gesture recognizer will be added to.
- */
-- (__kindof UIView*)viewForPopupInteractionGestureRecognizer;
+@property (nullable, nonatomic, weak) id<LNPopupBarPreviewingDelegate> popupBarPreviewingDelegate;
 
 @end
 
 /**
  *  Popup presentation containment support in custom container view controller subclasses.
  */
-@interface UIViewController (LNCustomContainerPopupSupport)
+@interface UIViewController (LNPopupCustomContainer)
 /**
- *  Return a view to dock the popup bar to.
+ *  Return a view to dock the popup bar to, or nil to use the system-provided view.
  *
  *  A default implementation is provided for UIViewController, UINavigationController and UITabBarController.
  *  The default implmentation for UIViewController returns an invisible UIView docked to the bottom, for UINavigationController returns the toolbar and for UITabBarController returns the tab bar.
  *
- *  @return A view to dock the popup bar to.
+ *  @return Return a view to dock the popup bar to, or nil to use the default one.
  */
-- (__kindof UIView*)bottomDockingViewForPopup;
+- (nullable __kindof UIView*)bottomDockingViewForPopup;
 
 /**
- *  Return the default frame for the docking view, when the popup is hidden or closed state.
+ *  Return the default frame for the docking view, when the popup is in hidden or closed state. If bottomDockingViewForPopup returns nil, this method is not called, and the default system-provided frame is used.
  *
  *  A default implementation is provided for UIViewController, UINavigationController and UITabBarController.
  *

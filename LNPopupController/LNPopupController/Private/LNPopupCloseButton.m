@@ -15,7 +15,7 @@
 	UIView* _highlightView;
 }
 
-- (UIView*)backgroundView
+- (UIVisualEffectView*)backgroundView
 {
 	return _effectView;
 }
@@ -56,6 +56,8 @@
 		[self setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
 		
 		[self setImage:[UIImage imageNamed:@"DismissChevron" inBundle:[NSBundle bundleForClass:self.class] compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
+		
+		self.accessibilityLabel = NSLocalizedString(@"Close", @"");
 	}
 	
 	return self;
@@ -86,7 +88,8 @@
 	[self _setHighlighted:NO animated:YES];
 }
 
-- (void)_setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
+- (void)_setHighlighted:(BOOL)highlighted animated:(BOOL)animated
+{
 	dispatch_block_t alphaBlock = ^{
 		_highlightView.alpha = highlighted ? 1.0 : 0.0;
 		_highlightView.alpha = highlighted ? 1.0 : 0.0;
@@ -111,7 +114,7 @@
 	
 	_effectView.frame = self.bounds;
 	CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
-	maskLayer.rasterizationScale = 2.0 * [UIScreen mainScreen].nativeScale;
+	maskLayer.rasterizationScale = [UIScreen mainScreen].nativeScale;
 	maskLayer.shouldRasterize = YES;
 	
 	CGPathRef path = CGPathCreateWithRoundedRect(self.bounds, minSideSize / 2, minSideSize / 2, NULL);

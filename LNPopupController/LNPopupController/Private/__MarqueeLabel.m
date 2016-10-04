@@ -33,6 +33,13 @@ typedef void(^MLAnimationCompletionBlock)(BOOL finished);
 - (CGFloat)durationPercentageForPositionPercentage:(CGFloat)positionPercentage withDuration:(NSTimeInterval)duration;
 @end
 
+@interface __MarqueeLabel ()
+#if __IPHONE_OS_VERSION_MAX_ALLOWED > __IPHONE_9_3
+<CAAnimationDelegate>
+#endif
+
+@end
+
 @interface __MarqueeLabel()
 
 @property (nonatomic, strong) UILabel *subLabel;

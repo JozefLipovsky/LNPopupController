@@ -8,8 +8,22 @@
 
 @import LNPopupController;
 #import "FirstViewController.h"
+#import "DemoPopupContentViewController.h"
 #import "LoremIpsum.h"
 #import "RandomColors.h"
+
+@interface WhatsUpSplitViewController : UISplitViewController
+
+@end
+
+@implementation WhatsUpSplitViewController
+
+- (void)viewDidLayoutSubviews
+{
+	[super viewDidLayoutSubviews];
+}
+
+@end
 
 @interface DemoGalleryController : UITableViewController @end
 @implementation DemoGalleryController
@@ -21,75 +35,30 @@
 
 @end
 
-@interface DemoPopupContentViewController : UIViewController @end
-@implementation DemoPopupContentViewController
-
-- (void)willTransitionToTraitCollection:(UITraitCollection *)newCollection withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
-{
-	[coordinator animateAlongsideTransitionInView:self.popupPresentationContainerViewController.view animation:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
-		[self _setPopupItemButtonsWithTraitCollection:newCollection];
-	} completion:nil];
-	
-	[super willTransitionToTraitCollection:newCollection withTransitionCoordinator:coordinator];
-}
-
-- (void)_setPopupItemButtonsWithTraitCollection:(UITraitCollection*)collection
-{
-	if(collection.horizontalSizeClass == UIUserInterfaceSizeClassRegular)
-	{
-		self.popupItem.leftBarButtonItems = @[ [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"prev"] style:UIBarButtonItemStylePlain target:nil action:NULL],
-											   [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"play"] style:UIBarButtonItemStylePlain target:nil action:NULL],
-											   [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"nextFwd"] style:UIBarButtonItemStylePlain target:nil action:NULL]];
-		
-		self.popupItem.rightBarButtonItems = @[ [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"next"] style:UIBarButtonItemStylePlain target:nil action:NULL],
-												[[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"action"] style:UIBarButtonItemStylePlain target:nil action:NULL]];
-	}
-	else
-	{
-		self.popupItem.leftBarButtonItems = @[ [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"play"] style:UIBarButtonItemStylePlain target:nil action:NULL] ];
-		self.popupItem.rightBarButtonItems = @[ [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"action"] style:UIBarButtonItemStylePlain target:nil action:NULL] ];
-	}
-}
-
-- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
-{
-	[super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-}
-
-- (BOOL)prefersStatusBarHidden
-{
-//	return YES;
-	return self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
-}
-
-- (UIStatusBarStyle)preferredStatusBarStyle
-{
-	return UIStatusBarStyleLightContent;
-}
-
-- (UIStatusBarAnimation)preferredStatusBarUpdateAnimation
-{
-	return UIStatusBarAnimationFade;
-}
+@interface FirstViewController () <LNPopupBarPreviewingDelegate>
 
 @end
 
 @implementation FirstViewController
 {
 	__weak IBOutlet UIButton *_galleryButton;
-	
+	__weak IBOutlet UIButton *_nextButton;
 }
 
-#warning Enable this code to demonstrate popup bar customization
+// TODO: Uncomment this code to demonstrate popup bar customization
+
 //+ (void)load
 //{
-//	NSMutableParagraphStyle* paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-//	paragraphStyle.alignment = NSTextAlignmentRight;
-//	
-//	[[LNPopupBar appearanceWhenContainedInInstancesOfClasses:@[[UIViewController class]]] setTitleTextAttributes:@{NSParagraphStyleAttributeName: paragraphStyle, NSFontAttributeName: [UIFont fontWithName:@"Chalkduster" size:14], NSForegroundColorAttributeName: [UIColor yellowColor]}];
-//	[[LNPopupBar appearanceWhenContainedInInstancesOfClasses:@[[UIViewController class]]] setSubtitleTextAttributes:@{NSParagraphStyleAttributeName: paragraphStyle, NSFontAttributeName: [UIFont fontWithName:@"Chalkduster" size:12], NSForegroundColorAttributeName: [UIColor greenColor]}];
-//	[[LNPopupBar appearanceWhenContainedInInstancesOfClasses:@[[UIViewController class]]] setBarStyle:UIBarStyleBlack];
-//	[[LNPopupBar appearanceWhenContainedInInstancesOfClasses:@[[UIViewController class]]] setTintColor:[UIColor yellowColor]];
+//	static dispatch_once_t onceToken;
+//	dispatch_once(&onceToken, ^{
+//		NSMutableParagraphStyle* paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+//		paragraphStyle.alignment = NSTextAlignmentRight;
+//		
+//		[[LNPopupBar appearanceWhenContainedInInstancesOfClasses:@[[UIViewController class]]] setTitleTextAttributes:@{NSParagraphStyleAttributeName: paragraphStyle, NSFontAttributeName: [UIFont fontWithName:@"Chalkduster" size:14], NSForegroundColorAttributeName: [UIColor yellowColor]}];
+//		[[LNPopupBar appearanceWhenContainedInInstancesOfClasses:@[[UIViewController class]]] setSubtitleTextAttributes:@{NSParagraphStyleAttributeName: paragraphStyle, NSFontAttributeName: [UIFont fontWithName:@"Chalkduster" size:12], NSForegroundColorAttributeName: [UIColor greenColor]}];
+//		[[LNPopupBar appearanceWhenContainedInInstancesOfClasses:@[[UIViewController class]]] setBarStyle:UIBarStyleBlack];
+//		[[LNPopupBar appearanceWhenContainedInInstancesOfClasses:@[[UIViewController class]]] setTintColor:[UIColor yellowColor]];
+//	});
 //}
 
 - (void)viewDidLoad
@@ -98,7 +67,8 @@
 	
 	self.view.backgroundColor = LNRandomLightColor();
 
-#warning Enable this code to demonstrate disabling the popup close button.
+// TODO: Uncomment this code to demonstrate disabling the popup close button.
+	
 //	self.navigationController.popupContentView.popupCloseButton.hidden = YES;
 }
 
@@ -108,7 +78,11 @@
 	
 	//Ugly hack to fix tab bar tint color.
 	self.tabBarController.view.tintColor = [UIColor redColor];
-	_galleryButton.hidden = self.parentViewController != nil;
+	//Ugly hack to fix split view controller tint color.
+	self.splitViewController.view.tintColor = [UIColor redColor];
+	
+	_galleryButton.hidden = self.parentViewController != nil && [self.parentViewController isKindOfClass:[UISplitViewController class]] == NO;
+	_nextButton.hidden = self.splitViewController != nil;
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -133,14 +107,29 @@
 
 - (IBAction)_presentBar:(id)sender
 {
-	UIViewController* targetVC = self.tabBarController;
+	//All this logic is just so I can use the same controllers over and over in all examples. :-)
+	
+	if(sender == nil &&
+	   self.navigationController == nil &&
+	   self.splitViewController != nil &&
+	   self != self.splitViewController.viewControllers.firstObject)
+	{
+		return;
+	}
+	
+	UIViewController* targetVC = self.navigationController == nil ? self.splitViewController : nil;
+	
 	if(targetVC == nil)
 	{
-		targetVC = self.navigationController;
-		
+		targetVC = self.tabBarController;
 		if(targetVC == nil)
 		{
-			targetVC = self;
+			targetVC = self.navigationController;
+			
+			if(targetVC == nil)
+			{
+				targetVC = self;
+			}
 		}
 	}
 	
@@ -154,6 +143,14 @@
 	demoVC.popupItem.title = [LoremIpsum sentence];
 	demoVC.popupItem.subtitle = [LoremIpsum sentence];
 	demoVC.popupItem.progress = (float) arc4random() / UINT32_MAX;
+	
+	demoVC.popupItem.accessibilityLabel = NSLocalizedString(@"Custom popup bar accessibility label", @"");
+	demoVC.popupItem.accessibilityHint = NSLocalizedString(@"Custom popup bar accessibility hint", @"");
+	
+	targetVC.popupContentView.popupCloseButton.accessibilityLabel = NSLocalizedString(@"Custom popup button accessibility label", @"");
+	targetVC.popupContentView.popupCloseButton.accessibilityHint = NSLocalizedString(@"Custom popup button accessibility hint", @"");
+	
+	targetVC.popupBarPreviewingDelegate = self;
 	
 	[targetVC presentPopupBarWithContentViewController:demoVC animated:YES completion:nil];
 }
@@ -177,6 +174,34 @@
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
 	[segue.destinationViewController setHidesBottomBarWhenPushed:YES];
+}
+
+#pragma mark LNPopupBarPreviewingDelegate
+
+- (UIViewController *)previewingViewControllerForPopupBar:(LNPopupBar*)popupBar
+{
+	UIBlurEffect* blur = [UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight];
+	
+	UIViewController* vc = [UIViewController new];
+	vc.view = [[UIVisualEffectView alloc] initWithEffect:blur];
+	vc.view.backgroundColor = [[UIColor whiteColor] colorWithAlphaComponent:0.0];
+	vc.preferredContentSize = CGSizeMake([UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height / 2);
+	
+	UILabel* label = [UILabel new];
+	label.text = @"Hello from\n3D Touch!";
+	label.numberOfLines = 0;
+	label.textColor = [UIColor blackColor];
+	label.font = [UIFont systemFontOfSize:50 weight:UIFontWeightBlack];
+	[label sizeToFit];
+	label.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleTopMargin;
+	
+	UIVisualEffectView* vib = [[UIVisualEffectView alloc] initWithEffect:[UIVibrancyEffect effectForBlurEffect:blur]];
+	vib.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+	[vib.contentView addSubview:label];
+	
+	[[(UIVisualEffectView*)vc.view contentView] addSubview:vib];
+	
+	return vc;
 }
 
 @end
